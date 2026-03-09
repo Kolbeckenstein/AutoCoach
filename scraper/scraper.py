@@ -3,17 +3,18 @@ import urllib3
 from dataclasses import dataclass
 from os import makedirs, environ
 from os.path import exists
+from praw.models import MoreComments
 
 @dataclass(unsafe_hash=True)
 class FormcheckPost:
     url: str
     hash: str
 
-
 class Credentials:
-    client_id = os.environ["REDDIT_CLIENT_ID"]
-    client_secret = os.environ["REDDIT_CLIENT_SECRET"]
+    client_id = environ["REDDIT_CLIENT_ID"]
+    client_secret = environ["REDDIT_CLIENT_SECRET"]
     user_agent = "AutoCoach Scraper by u/kolbeckenstein_dev"
+
 
 class VideoDownloader:
     
@@ -45,10 +46,11 @@ class Scrapper:
         reddit = praw.Reddit(client_id = credentials.client_id, 
                             client_secret = credentials.client_secret, 
                             user_agent = credentials.user_agent) 
+        
+        reddit.read_only = True
 
         subreddit = reddit.subreddit('formcheck')
 
-        # posts = subreddit.hot(limit=100)
         posts = subreddit.search('flair:"' + flair_target + '}"', limit=10, syntax='lucene')
 
         #  for submission in subReddit.search('flair:"'+flairName[0]+'"', sort='new', syntax='lucene', limit=999):
@@ -56,10 +58,21 @@ class Scrapper:
         # print(submission.title)
 
         vids = []
-
-        print(vids)
+        comments = []
 
         for post in posts:
+            post_comments = {
+                "title": post.title,
+                "comments": []
+            }
+            for top_level_comment in post.comments:
+                if isinstance(top_level_comment, MoreComments):
+                    continue
+                post_comments["comments"].append({
+                    "body": top_level_comment.body,
+                    "score": top_level_comment.score
+                })
+
             try:
                 url = post.media['reddit_video']['fallback_url']
                 print(url)
@@ -81,10 +94,13 @@ class Scrapper:
                 outfile.write(json.dumps(json_dict))
                 print("wrote json")
             time.sleep(2)
+
+        #something that writes comments to a file
             
 
 if __name__ == "__main__":
-    lifts = ["Deadlift", "Squat", "Bench Press"]
+    # lifts = ["Deadlift", "Squat", "Bench Press"]
+    lifts = ["Deadlift"]
     for lift in lifts:
         Scrapper.scrape(Credentials(), lift)
 
