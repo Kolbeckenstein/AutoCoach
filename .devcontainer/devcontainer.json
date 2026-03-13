@@ -1,0 +1,69 @@
+{
+  "name": "AutoCoach Dev Environment",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "charliermarsh.ruff",
+        "ms-azuretools.vscode-docker",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "GitHub.copilot"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspace/backend/.venv/bin/python",
+        "python.testing.pytestEnabled": true,
+        "python.testing.unittestEnabled": false,
+        "python.linting.enabled": true,
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll": "explicit"
+          }
+        },
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "ruff.lint.run": "onSave",
+        "editor.rulers": [100],
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/*.pyc": true,
+          ".pytest_cache": true,
+          ".mypy_cache": true,
+          ".ruff_cache": true
+        }
+      }
+    }
+  },
+
+  "postCreateCommand": "cd /workspace/backend && uv sync --all-extras && uv run pre-commit install",
+
+  "forwardPorts": [
+    8000,  // FastAPI
+    5432,  // PostgreSQL
+    6379,  // Redis
+    6333   // Qdrant
+  ],
+
+  "remoteUser": "vscode"
+}

@@ -1,14 +1,19 @@
-import praw, time, json
-import urllib3
+import json
+import time
 from dataclasses import dataclass
-from os import makedirs, environ
+from os import environ, makedirs
 from os.path import exists
+
+import praw
+import urllib3
 from praw.models import MoreComments
+
 
 @dataclass(unsafe_hash=True)
 class FormcheckPost:
     url: str
     hash: str
+
 
 class Credentials:
     client_id = environ["REDDIT_CLIENT_ID"]
@@ -17,7 +22,6 @@ class Credentials:
 
 
 class VideoDownloader:
-    
     def __init__(self, download_path: str):
         self.download_path = download_path
 
@@ -25,14 +29,14 @@ class VideoDownloader:
         chunk_size = 8192
 
         http = urllib3.PoolManager()
-        r = http.request('GET', url, preload_content=False)
+        r = http.request("GET", url, preload_content=False)
 
         directory_path = self.download_path + "/" + flair_target + "/"
 
         if not exists(directory_path):
             makedirs(directory_path)
 
-        with open(directory_path + url.split("/")[-2] + ".mp4", 'wb') as out:
+        with open(directory_path + url.split("/")[-2] + ".mp4", "wb") as out:
             while True:
                 data = r.read(chunk_size)
                 if not data:
@@ -41,17 +45,20 @@ class VideoDownloader:
 
         r.release_conn()
 
+
 class Scrapper:
     def scrape(credentials: Credentials, flair_target: str):
-        reddit = praw.Reddit(client_id = credentials.client_id, 
-                            client_secret = credentials.client_secret, 
-                            user_agent = credentials.user_agent) 
-        
+        reddit = praw.Reddit(
+            client_id=credentials.client_id,
+            client_secret=credentials.client_secret,
+            user_agent=credentials.user_agent,
+        )
+
         reddit.read_only = True
 
-        subreddit = reddit.subreddit('formcheck')
+        subreddit = reddit.subreddit("formcheck")
 
-        posts = subreddit.search('flair:"' + flair_target + '}"', limit=10, syntax='lucene')
+        posts = subreddit.search('flair:"' + flair_target + '}"', limit=10, syntax="lucene")
 
         #  for submission in subReddit.search('flair:"'+flairName[0]+'"', sort='new', syntax='lucene', limit=999):
         # submission.flair.select(flairName[1])
@@ -61,20 +68,16 @@ class Scrapper:
         comments = []
 
         for post in posts:
-            post_comments = {
-                "title": post.title,
-                "comments": []
-            }
+            post_comments = {"title": post.title, "comments": []}
             for top_level_comment in post.comments:
                 if isinstance(top_level_comment, MoreComments):
                     continue
-                post_comments["comments"].append({
-                    "body": top_level_comment.body,
-                    "score": top_level_comment.score
-                })
+                post_comments["comments"].append(
+                    {"body": top_level_comment.body, "score": top_level_comment.score}
+                )
 
             try:
-                url = post.media['reddit_video']['fallback_url']
+                url = post.media["reddit_video"]["fallback_url"]
                 print(url)
                 url = url.split("?")[0]
                 name = post.title[:30].rstrip() + ".mp4"
@@ -90,13 +93,13 @@ class Scrapper:
             print("downloaded video")
             name = vid[0].split("/")[-2]
             with open(f"./data/{flair_target}/{name}.json", "w+") as outfile:
-                json_dict = {"lift" : flair_target}
+                json_dict = {"lift": flair_target}
                 outfile.write(json.dumps(json_dict))
                 print("wrote json")
             time.sleep(2)
 
-        #something that writes comments to a file
-            
+        # something that writes comments to a file
+
 
 if __name__ == "__main__":
     # lifts = ["Deadlift", "Squat", "Bench Press"]
@@ -107,7 +110,7 @@ if __name__ == "__main__":
 """
 Iteration 1:
 script calls for last x videos
-create a 
+create a
 """
 
-#Algorithm: Dynamic Time Warping
+# Algorithm: Dynamic Time Warping
