@@ -84,6 +84,11 @@ Thumbs.db
 # Docker
 .dockerignore
 
+# Claude Code / gstack
+.claude/
+
 # Temporary files
 tmp/
 temp/
+.gstack/
+design-consultation-preview-*.html
