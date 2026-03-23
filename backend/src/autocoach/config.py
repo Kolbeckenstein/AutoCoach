@@ -18,7 +18,17 @@ class AppConfig(BaseSettings):
     postgres_user: str = "autocoach"
     postgres_password: str = "autocoach_dev_password"
 
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+
+    blob_storage_root: str = "/tmp/autocoach-blobs"
+
     log_level: str = "INFO"
+
+    @property
+    def redis_url(self) -> str:
+        """Redis URL for Celery broker and result backend."""
+        return f"redis://{self.redis_host}:{self.redis_port}/0"
 
     @property
     def db_url(self) -> str:
