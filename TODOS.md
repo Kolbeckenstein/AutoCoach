@@ -248,6 +248,66 @@ Completed 2026-03-19. Redis `7-alpine` already in docker-compose. Added `redis_u
 
 ---
 
+## New from Eng Review (2026-03-26)
+
+### Extend PhaseDetector for non-squat lifts before v0.5
+
+**What:** Either extend `PhaseDetector` to handle deadlift/bench phase detection, or gate non-squat lifts with a clear warning ("Squat scoring is validated; deadlift/bench scoring is experimental") in v0.5's lift type selector.
+
+**Why:** `PhaseDetector.detect()` uses `argmax(hip_y - knee_y)` — this is squat-specific. For deadlift (starts bent, ends extended), the argmax fires at the wrong phase boundary. For bench press (horizontal body), `hip_y - knee_y` is undefined. v0.5 adds a lift type selector that accepts all three lifts, but the pipeline will silently produce garbage for non-squat lifts. Flagged by outside voice during eng review.
+
+**Context:** Two approaches: (a) Quick fix — gate non-squat lifts with a warning banner and reduced confidence score. (b) Full fix — implement lift-specific phase detection heuristics (deadlift: track hip extension from low to high; bench: track elbow angle from flexed to extended). Option (a) is 15 minutes CC time; option (b) is ~1 hour CC time. Recommend (a) for v0.5, (b) for v1.
+
+**Effort:** S (gate) / M (full fix)
+**Priority:** P1
+**Depends on:** v0.5 scoring module scope
+
+---
+
+## New from CEO Review (2026-03-23)
+
+### Populate Qdrant with scraped Reddit data
+
+**What:** Run existing scraper + embedding pipeline to populate Qdrant with Reddit coaching comments before v1b launch.
+
+**Why:** v1b's RAG-powered LLM coaching depends on having a populated vector store. Without it, LLM coaching falls back to biomechanics-only prompts — functional but less rich. The scraper and embedding pipeline already exist; this is an operational task, not a code task.
+
+**Context:** Existing `rag/store.py` and `rag/embeddings.py` modules (13 tests) handle Qdrant operations. The scraper exists from earlier work. Steps: (1) Run scraper against target subreddits (r/formcheck, r/weightroom, r/fitness). (2) Filter for comments with score ≥ 5. (3) Run embedding pipeline to vectorize and store in Qdrant. (4) Verify retrieval works with sample queries. If corpus is empty at v1b launch, LLM coaching still works (graceful degradation) — but quality is significantly better with RAG context.
+
+**Effort:** S
+**Priority:** P1
+**Depends on:** v1a infrastructure (Qdrant running in docker-compose)
+
+---
+
+### Mount blob/ root as FastAPI StaticFiles
+
+**What:** Configure FastAPI to serve the blob storage root directory as static files so keyframe image URLs are HTTP-accessible in HTML pages.
+
+**Why:** `LocalBlobStorage.get_url()` returns absolute filesystem paths (e.g., `/app/data/keyframes/abc/frame_042.png`). These work for the pose pipeline (which takes `Path`), but v1b's overlay module generates keyframe PNGs that need to be served as `<img src="...">` in HTML. Without a StaticFiles mount, the browser can't access them.
+
+**Context:** FastAPI's `StaticFiles` middleware can mount a directory at a URL prefix (e.g., `app.mount("/static/blob", StaticFiles(directory=blob_root))`). The API then constructs image URLs as `/static/blob/keyframes/{video_id}/frame_042.png`. This couples the API to `LocalBlobStorage`'s path format — acceptable for local dev. When S3 backend is added, keyframe URLs would be presigned S3 URLs instead, and the StaticFiles mount becomes unnecessary.
+
+**Effort:** S
+**Priority:** P1
+**Depends on:** v1a API layer, overlay module (v1b)
+
+---
+
+### Extend BiomechanicalFeatures for bench press
+
+**What:** Investigate and potentially extend `BiomechanicalFeatures` with bench-press-specific angles (elbow angle, bar path deviation) that aren't well-captured by the current squat-centric feature set.
+
+**Why:** Current `BiomechanicalFeatures` measures hip angle, knee angle, and back angle — all designed for standing movements. For bench press (horizontal body), hip angle is meaningless and back angle captures arch rather than form quality. Scoring bench press with these features is possible but limited, which is why v0.5 shows an "experimental" caveat. Extending the feature set would unlock meaningful bench coaching.
+
+**Context:** Potential new features: (1) Elbow angle at bottom position (measures touch point and range of motion). (2) Bar path deviation from vertical (measures efficiency). (3) Shoulder angle (measures flare). These require changes to `BiomechanicsExtractor` and downstream consumers (scoring, coaching prompts). May also need `ViewClassifier` adjustments for the supine body position. Research needed on whether MediaPipe landmark detection is reliable for a person lying on a bench.
+
+**Effort:** M
+**Priority:** P2
+**Depends on:** v0.5 scoring module (to understand current scoring limitations in practice)
+
+---
+
 ## Completed
 
 ### Unit tests for pose processing pipeline ~~(0% coverage)~~
