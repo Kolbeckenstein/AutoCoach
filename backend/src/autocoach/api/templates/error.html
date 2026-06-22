@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}AutoCoach — Error{% endblock %}
+
+{% block head %}
+<style>
+  .error-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+  }
+
+  .error-message {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-lg);
+  }
+
+  .error-help {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+  }
+
+  .action-row {
+    margin-top: var(--space-xl);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<p class="section-label" style="color: var(--accent);">// ERROR</p>
+
+<h1 class="error-title">{{ error_title }}</h1>
+<p class="error-message">{{ error_message }}</p>
+
+{% if show_help %}
+<p class="error-help">Tip: Film from the side, keep your full body in frame, and use good lighting.</p>
+{% endif %}
+
+<div class="action-row">
+  <a href="/" class="btn btn-primary">Try Again</a>
+</div>
+{% endblock %}

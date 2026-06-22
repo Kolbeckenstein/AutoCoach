@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}AutoCoach — Results{% endblock %}
+
+{% block head %}
+<style>
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+
+  .metric {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+  }
+  .metric__label {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+    letter-spacing: 0.04em;
+  }
+  .metric__value {
+    font-family: var(--font-mono);
+    font-size: var(--text-xl);
+    font-weight: 600;
+  }
+  .metric__value--good    { color: var(--success); }
+  .metric__value--warning { color: var(--warning); }
+  .metric__value--danger  { color: var(--error); }
+
+  .phase-list {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-xl);
+  }
+  .phase-tag {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text-secondary);
+  }
+
+  .meta-row {
+    display: flex;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+  }
+  .meta-item {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+  .meta-item span {
+    color: var(--text-secondary);
+  }
+
+  .action-row {
+    margin-top: var(--space-xl);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<p class="section-label">// RESULTS</p>
+
+<div class="metric-grid">
+  <div class="metric">
+    <p class="metric__label">Min Knee Angle</p>
+    <p class="metric__value {{ 'metric__value--good' if features.min_knee_angle < 90 else ('metric__value--warning' if features.min_knee_angle < 110 else 'metric__value--danger') }}">
+      {{ "%.1f"|format(features.min_knee_angle) }}°
+    </p>
+  </div>
+  <div class="metric">
+    <p class="metric__label">Min Hip Angle</p>
+    <p class="metric__value {{ 'metric__value--good' if features.min_hip_angle < 90 else ('metric__value--warning' if features.min_hip_angle < 110 else 'metric__value--danger') }}">
+      {{ "%.1f"|format(features.min_hip_angle) }}°
+    </p>
+  </div>
+  <div class="metric">
+    <p class="metric__label">Max Back Angle</p>
+    <p class="metric__value {{ 'metric__value--good' if features.max_back_angle < 45 else ('metric__value--warning' if features.max_back_angle < 60 else 'metric__value--danger') }}">
+      {{ "%.1f"|format(features.max_back_angle) }}°
+    </p>
+  </div>
+  <div class="metric">
+    <p class="metric__label">View Confidence</p>
+    <p class="metric__value {{ 'metric__value--good' if features.view_confidence >= 0.7 else 'metric__value--warning' }}">
+      {{ "%.0f"|format(features.view_confidence * 100) }}%
+    </p>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<p class="section-label">// PHASES</p>
+<div class="phase-list">
+  {% set unique_phases = features.phase_labels | unique | list %}
+  {% for phase in unique_phases %}
+  <span class="phase-tag">{{ phase }}</span>
+  {% endfor %}
+</div>
+
+<div class="meta-row">
+  <div class="meta-item">Side: <span>{{ features.dominant_side }}</span></div>
+  <div class="meta-item">Frames: <span>{{ features.phase_labels | length }}</span></div>
+</div>
+
+<div class="action-row">
+  <a href="/" class="btn btn-primary">Analyze Another</a>
+</div>
+{% endblock %}

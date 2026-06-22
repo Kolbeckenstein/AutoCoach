@@ -1,6 +1,7 @@
 .PHONY: help backend-install backend-test backend-test-unit backend-test-integration \
         backend-lint backend-format backend-type-check backend-check-all \
-        docker-up docker-down docker-logs
+        docker-up docker-down docker-logs \
+        wlan-expose wlan-status
 
 help:  ## Show this help message
 	@echo "AutoCoach Monorepo Commands"
@@ -59,3 +60,24 @@ docker-down:  ## Stop all development services
 
 docker-logs:  ## Stream logs from all services
 	docker-compose -f .devcontainer/docker-compose.yml logs -f
+
+# ------------------------------------------------------------------
+# WSL2 WLAN exposure (run from inside the devcontainer)
+# ------------------------------------------------------------------
+
+wlan-expose:  ## Print the command to expose the API to WLAN (run the printed command in an admin PowerShell on Windows)
+	@echo ""
+	@echo "Run this in an admin PowerShell on Windows:"
+	@echo ""
+	@echo "  powershell -ExecutionPolicy Bypass -File scripts\wlan-expose.ps1"
+	@echo ""
+	@echo "Or right-click scripts\wlan-expose.ps1 in Explorer and choose 'Run with PowerShell'."
+	@echo "(script auto-detects WSL2 IP — re-run after WSL2 restarts)"
+	@echo ""
+
+wlan-status:  ## Show container IP (run portproxy check separately in Windows PowerShell)
+	@echo "--- Container/WSL2 IP (as seen from inside devcontainer) ---"
+	@hostname -I | awk '{print $$1}'
+	@echo ""
+	@echo "--- To check portproxy rules, run in Windows PowerShell ---"
+	@echo "  netsh interface portproxy show v4tov4"

@@ -19,6 +19,8 @@ services:
       - REDIS_PORT=6379
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
+    ports:
+      - "0.0.0.0:8000:8000"
     depends_on:
       - postgres
       - redis

@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}AutoCoach — Squat Analysis{% endblock %}
+
+{% block head %}
+<style>
+  .hero {
+    font-family: var(--font-hero);
+    font-size: var(--text-hero);
+    line-height: 1.1;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xl);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 150ms ease-out, background 150ms ease-out;
+    margin-bottom: var(--space-md);
+  }
+  .upload-zone:hover,
+  .upload-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(232, 93, 58, 0.05);
+  }
+
+  .upload-zone input[type="file"] {
+    display: none;
+  }
+
+  .upload-zone__label {
+    font-family: var(--font-mono);
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+  }
+  .upload-zone__label strong {
+    color: var(--accent);
+  }
+
+  .constraints {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    margin-bottom: var(--space-xl);
+  }
+
+  .submit-row {
+    display: flex;
+    gap: var(--space-sm);
+  }
+  .submit-row .btn { flex: 1; }
+
+  .file-name {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin-top: var(--space-sm);
+    min-height: 1.4em;
+  }
+
+  /* ── Loading overlay ── */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 17, 16, 0.92);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  .loading-overlay.active { display: flex; }
+
+  .loading-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-lg);
+    color: var(--text-secondary);
+    letter-spacing: 0.08em;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<p class="section-label">// SQUAT ANALYSIS</p>
+<h1 class="hero">Film your squat.<br>Get coached.</h1>
+
+<form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+  <div class="upload-zone" id="drop-zone" tabindex="0" role="button" aria-label="Choose a video file">
+    <p class="upload-zone__label">Tap to record or <strong>choose a file</strong></p>
+    <input type="file" name="file" id="file-input" accept="video/*" capture="environment" required />
+  </div>
+  <p class="file-name" id="file-name"></p>
+  <p class="constraints">Max 30s · Under 100MB</p>
+
+  <div class="submit-row">
+    <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Analyze My Form</button>
+  </div>
+</form>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <p class="loading-label" id="loading-text">// EXTRACTING POSE</p>
+</div>
+
+<script>
+(function() {
+  var form     = document.getElementById('upload-form');
+  var zone     = document.getElementById('drop-zone');
+  var input    = document.getElementById('file-input');
+  var nameEl   = document.getElementById('file-name');
+  var btn      = document.getElementById('submit-btn');
+  var overlay  = document.getElementById('loading-overlay');
+  var label    = document.getElementById('loading-text');
+
+  // Click zone → open file picker
+  zone.addEventListener('click', function() { input.click(); });
+  zone.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+  });
+
+  // Drag & drop
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      onFileSelected();
+    }
+  });
+
+  // File selected
+  input.addEventListener('change', onFileSelected);
+
+  function onFileSelected() {
+    var file = input.files[0];
+    if (!file) return;
+    nameEl.textContent = file.name;
+    btn.disabled = false;
+
+    // Client-side duration check
+    var video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = function() {
+      URL.revokeObjectURL(video.src);
+      if (video.duration > 30) {
+        nameEl.textContent = file.name + ' — too long (' + Math.round(video.duration) + 's, max 30s)';
+        nameEl.style.color = 'var(--error)';
+        btn.disabled = true;
+      } else {
+        nameEl.style.color = '';
+      }
+    };
+    video.src = URL.createObjectURL(file);
+  }
+
+  // Submit → show loading overlay, disable button
+  form.addEventListener('submit', function() {
+    btn.disabled = true;
+    overlay.classList.add('active');
+
+    var stages = ['// EXTRACTING POSE', '// ANALYZING ANGLES', '// SCORING FORM'];
+    var i = 0;
+    setInterval(function() {
+      i = (i + 1) % stages.length;
+      label.textContent = stages[i];
+    }, 1500);
+  });
+})();
+</script>
+{% endblock %}

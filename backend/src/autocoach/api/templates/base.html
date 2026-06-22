@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}AutoCoach{% endblock %}</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Design tokens (from DESIGN.md) ── */
+    :root {
+      --bg:             #111110;
+      --surface:        #1A1A19;
+      --surface-raised: #242423;
+      --border:         #333332;
+      --text-muted:     #888886;
+      --text-secondary: #BBBBBA;
+      --text-primary:   #FFFFFF;
+
+      --accent:         #E85D3A;
+      --accent-hover:   #D14E2E;
+      --accent-glow:    rgba(232, 93, 58, 0.3);
+
+      --success:        #34D399;
+      --warning:        #FBBF24;
+      --error:          #F87171;
+      --info:           #60A5FA;
+
+      --font-hero:  'Instrument Serif', serif;
+      --font-body:  'Instrument Sans', sans-serif;
+      --font-mono:  'Geist Mono', monospace;
+
+      --space-xs:  4px;
+      --space-sm:  8px;
+      --space-md:  16px;
+      --space-lg:  24px;
+      --space-xl:  32px;
+      --space-2xl: 48px;
+      --space-3xl: 64px;
+
+      --radius-sm:   4px;
+      --radius-md:   8px;
+      --radius-lg:   12px;
+      --radius-full: 9999px;
+
+      --text-sm:   0.875rem;
+      --text-base: 1rem;
+      --text-lg:   1.25rem;
+      --text-xl:   1.5rem;
+      --text-hero: 3.5rem;
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: var(--space-lg) var(--space-md);
+    }
+
+    /* ── Brand lockup ── */
+    .brand {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-2xl);
+    }
+
+    /* ── Section labels  // UPPERCASE ── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      margin-bottom: var(--space-md);
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      padding: var(--space-sm) var(--space-lg);
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      min-height: 44px;
+      transition: background 150ms ease-out, box-shadow 150ms ease-out;
+    }
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--text-primary);
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.3;
+      margin: var(--space-xl) 0;
+    }
+
+    /* ── Focus visible on all interactive ── */
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="container">
+    <div class="brand">AutoCoach</div>
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
